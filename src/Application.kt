@@ -24,7 +24,7 @@ fun scheduleCronJob(){
 
     val trigger = newTrigger()
         .withIdentity("trigger3", "group1")
-        .withSchedule(cronSchedule(" 0 0/2 8-17 * * ? "))
+        .withSchedule(cronSchedule(" 0 * * * * ? "))
         .forJob("myJob", "group1")
         .build()
 

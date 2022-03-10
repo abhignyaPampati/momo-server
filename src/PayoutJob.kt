@@ -8,8 +8,11 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.*
+import kotlinx.serialization.json.*
 
 
+@Serializable
 data class BeneficiaryDetails (
     @SerializedName("email_address") val email_address : String,
     @SerializedName("mobile_number") val mobile_number : String,
@@ -20,6 +23,7 @@ data class BeneficiaryDetails (
     annotation class SerializedName(val value: String)
 }
 
+@Serializable
 data class InitiateTransaction (
     @SerializedName("reference_id") val reference_id : String,
     @SerializedName("purpose_message") val purpose_message : String,
@@ -41,34 +45,29 @@ data class InitiateTransaction (
 
 
 class PayoutJob: Job{
+    private val clientId = "momo_staging2"
     override fun execute(context: JobExecutionContext?) {
         runBlocking {
             launch {
-                initiate()
+                    initiate()
+//                    println("This is a quartz job!")
             }
         }
-        println("This is a quartz job!")
     }
-    }
-
 
     private suspend fun initiate(){
         val url = "https://in.staging.decentro.tech/core_banking/money_transfer/initiate"
         val client = HttpClient(CIO)
         val response: HttpResponse = client.post(url) {
             headers{
-                append("Content-Type", "application/json")
-                append("client_id", "momo_staging2")
+                append("client_id", clientId)
                 append("client_secret", "6u8b4U0vJVWy84VtvfFVCHEqn0Kllo15")
                 append("module_secret", "tGs7NjCd59wy9wZMwLRlUx32HLJTaszj")
                 append("provider_secret", "qtDM3ipZa1eWgq3A1cp75zdF5QVXthaL")
-                append("Connection", "keep-alive")
-                append("Accept-Encoding", "gzip, deflate, br")
-                append("Accept", "*/*")
-                append("User-Agent", "PostmanRuntime/7.29.0")
             }
-            body = InitiateTransaction(
-                "decentro_request_211",
+            contentType(ContentType.Application.Json)
+            body = Json.encodeToString(InitiateTransaction(
+                "decentro_request_222",
                 "This is a nice message",
                 "cust_0003",
                 "mer98970",
@@ -87,8 +86,9 @@ class PayoutJob: Job{
                     "IN"
                 ),
                 "INR"
-            )
+            ))
         }
         val stringBody: String = response.receive()
         println(stringBody)
     }
+}
